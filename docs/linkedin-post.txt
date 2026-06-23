@@ -1,0 +1,30 @@
+﻿Automatizei um fluxo de NOC integrando Zabbix + n8n + GLPI + Microsoft Teams.
+
+A ideia foi reduzir trabalho manual no tratamento de alertas e evitar abertura de chamados duplicados.
+
+O workflow recebe eventos do Zabbix via webhook, valida o payload, classifica o tipo de alerta, consulta histórico, verifica chamados abertos no GLPI e decide automaticamente o melhor caminho:
+
+→ abrir novo chamado
+→ atualizar chamado existente
+→ pedir validação humana no Teams
+→ aguardar próximo step de escalonamento
+
+Alguns pontos da solução:
+
+✅ Webhook autenticado
+✅ Validação de payload
+✅ Classificação de eventos
+✅ Consulta de histórico no Zabbix
+✅ Detecção de recorrência/flapping
+✅ Deduplicação antes de abrir chamado
+✅ Integração com GLPI
+✅ Notificação no Microsoft Teams
+✅ Acknowledge automático no Zabbix
+✅ Estratégia anti-colisão para eventos simultâneos
+
+Por segurança e propriedade intelectual, publiquei apenas a visão arquitetural e funcional do projeto, sem expor o workflow completo, tokens, URLs internas ou regras sensíveis.
+
+Repositório:
+https://github.com/welbertsimoes/noc-automation
+
+#NOC #Observabilidade #SRE #Zabbix #n8n #GLPI #MicrosoftTeams #Automação #Monitoramento #DevOps
