@@ -1,0 +1,29 @@
+{
+  "name": "W01 - Validador Alerta (PUBLIC SAMPLE - sanitized)",
+  "description": "Amostra pública sanitizada do workflow auxiliar de confirmação humana.",
+  "warning": "Não contém HTML completo de produção nem webhook real.",
+  "nodes": [
+    {
+      "name": "00A - Validar",
+      "type": "webhook",
+      "purpose": "Recebe clique do card do Teams",
+      "path": "/webhook/validar-alerta"
+    },
+    {
+      "name": "01A - Página de Confirmação",
+      "type": "respondToWebhook",
+      "purpose": "Exibe confirmação e devolve decisao/ticket_id ao resume_url",
+      "html": "REDACTED_CONFIRMATION_PAGE"
+    }
+  ],
+  "expected_query_params": [
+    "decisao",
+    "ticket_id",
+    "resume_url"
+  ],
+  "supported_decisions": [
+    "abrir",
+    "adicionar",
+    "ignorar"
+  ]
+}

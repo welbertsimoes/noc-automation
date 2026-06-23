@@ -1,0 +1,133 @@
+{
+  "name": "W01 - Principal (PUBLIC SAMPLE - sanitized)",
+  "description": "Amostra pública sanitizada. Não contém workflow completo, URLs reais, credenciais ou regras sensíveis.",
+  "warning": "Este arquivo é intencionalmente incompleto/ofuscado e não deve ser usado como export importável de produção.",
+  "nodes": [
+    {
+      "name": "00 - Webhook Zabbix",
+      "type": "webhook",
+      "purpose": "Recebe alerta autenticado do Zabbix",
+      "details": "Header Auth aplicado. Token omitido."
+    },
+    {
+      "name": "01 - Normalizar Payload",
+      "type": "set",
+      "purpose": "Extrai campos principais do evento",
+      "fields_example": [
+        "event_id",
+        "event_name",
+        "host_name",
+        "severity",
+        "esc_step"
+      ]
+    },
+    {
+      "name": "01.1 - Validar Payload",
+      "type": "code",
+      "purpose": "Valida campos obrigatórios e severidade",
+      "logic": "REDACTED_VALIDATION_LOGIC"
+    },
+    {
+      "name": "03 - Classificar e Consolidar Alerta",
+      "type": "code",
+      "purpose": "Classifica tipo do alerta e gera ID de automação",
+      "logic": "REDACTED_CLASSIFICATION_AND_HASH_LOGIC"
+    },
+    {
+      "name": "03.1 - Zabbix: Buscar Trigger ID",
+      "type": "httpRequest",
+      "purpose": "Consulta trigger/evento no Zabbix",
+      "url": "https://zabbix.example.com/api_jsonrpc.php"
+    },
+    {
+      "name": "03.2 - Zabbix: Buscar Histórico",
+      "type": "httpRequest",
+      "purpose": "Busca histórico da última janela de análise",
+      "url": "https://zabbix.example.com/api_jsonrpc.php"
+    },
+    {
+      "name": "03.3 - Analisar Recorrência",
+      "type": "code",
+      "purpose": "Detecta flapping/recorrência",
+      "logic": "REDACTED_FLAPPING_RULES"
+    },
+    {
+      "name": "03.4 - Anti-colisão",
+      "type": "code/wait",
+      "purpose": "Espalha eventos simultâneos",
+      "logic": "REDACTED_BUCKET_JITTER_STRATEGY"
+    },
+    {
+      "name": "04.1 - GLPI: Autenticar Sessão",
+      "type": "httpRequest",
+      "purpose": "Inicia sessão GLPI",
+      "url": "https://glpi.example.com/apirest.php/initSession"
+    },
+    {
+      "name": "04.2 - GLPI: Buscar Chamados Abertos",
+      "type": "httpRequest",
+      "purpose": "Consulta tickets por host/status",
+      "url": "https://glpi.example.com/apirest.php/search/Ticket"
+    },
+    {
+      "name": "04.3 - GLPI: Validar Duplicidade",
+      "type": "code",
+      "purpose": "Decide ABRIR, ATUALIZAR, VALIDAR ou AGUARDAR",
+      "logic": "REDACTED_CORRELATION_DECISION_ENGINE"
+    },
+    {
+      "name": "05 - Switch de Decisão",
+      "type": "switch",
+      "routes": [
+        "ABRIR",
+        "VALIDACAO_HUMANA",
+        "ATUALIZAR",
+        "AGUARDAR"
+      ]
+    },
+    {
+      "name": "06A - GLPI: Criar Novo Chamado",
+      "type": "httpRequest",
+      "purpose": "Cria ticket GLPI com dados do alerta",
+      "body": "REDACTED_TICKET_TEMPLATE"
+    },
+    {
+      "name": "05.1/06B - Validação via Teams",
+      "type": "code/httpRequest/wait",
+      "purpose": "Monta card interativo e aguarda decisão humana",
+      "body": "REDACTED_ADAPTIVE_CARD"
+    },
+    {
+      "name": "06D - GLPI: Inserir Acompanhamento",
+      "type": "httpRequest",
+      "purpose": "Atualiza ticket existente",
+      "body": "REDACTED_FOLLOWUP_TEMPLATE"
+    },
+    {
+      "name": "ACK - Preparar Mensagem",
+      "type": "set",
+      "purpose": "Prepara mensagem de acknowledge por caminho"
+    },
+    {
+      "name": "Acknowledge Zabbix",
+      "type": "httpRequest",
+      "purpose": "Registra ACK no evento Zabbix",
+      "url": "https://zabbix.example.com/api_jsonrpc.php"
+    }
+  ],
+  "decision_summary": {
+    "ABRIR": "Sem ticket correlacionado; cria novo chamado.",
+    "ATUALIZAR": "Ticket exato encontrado; adiciona acompanhamento.",
+    "VALIDACAO_HUMANA": "Host possui tickets, mas sem match exato; pede decisão no Teams.",
+    "AGUARDAR": "Step inicial; evita abertura prematura."
+  },
+  "redacted_items": [
+    "URLs internas",
+    "tokens",
+    "credential IDs",
+    "instance IDs",
+    "webhook IDs",
+    "templates completos",
+    "regras sensíveis"
+  ]
+}

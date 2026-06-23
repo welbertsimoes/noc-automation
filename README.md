@@ -1,169 +1,152 @@
-﻿# W01 Principal — Automação NOC com Zabbix, n8n, GLPI e Microsoft Teams
+# W01 Principal — Automação NOC com Zabbix, n8n, GLPI e Microsoft Teams
 
-> Projeto de automação para tratamento inteligente de alertas de monitoramento, correlação com tickets e notificação operacional.
+> Showcase técnico de uma automação NOC criada em n8n para correlacionar alertas do Zabbix, tickets GLPI e notificações no Microsoft Teams.
 
-Este repositório apresenta uma visão arquitetural e funcional do workflow **W01 Principal**, desenvolvido em **n8n** para integrar **Zabbix**, **GLPI** e **Microsoft Teams**.
-
-Por questões de segurança e propriedade intelectual, o workflow completo não é publicado neste repositório.
+Este repositório **não publica o workflow operacional completo**.  
+O objetivo é demonstrar arquitetura, decisões técnicas e uma base pública sanitizada, sem entregar regras sensíveis, URLs internas, credenciais ou payloads reais.
 
 ---
 
-## Visão geral
+## O que este projeto faz
 
-O W01 Principal automatiza parte do processo operacional do NOC, reduzindo atividades manuais no tratamento de alertas e evitando abertura de chamados duplicados.
+O W01 Principal automatiza o fluxo de tratamento de alertas do NOC:
 
-A automação recebe eventos do Zabbix, valida o payload, classifica o alerta, consulta histórico, verifica chamados existentes no GLPI e decide automaticamente o próximo passo.
+1. Recebe alerta do Zabbix via webhook autenticado.
+2. Normaliza e valida o payload.
+3. Classifica o tipo do evento.
+4. Consulta histórico no Zabbix para identificar recorrência/flapping.
+5. Consulta chamados abertos no GLPI.
+6. Decide automaticamente entre abrir, atualizar, validar com humano ou aguardar.
+7. Notifica o Microsoft Teams.
+8. Executa acknowledge no Zabbix.
 
 ---
 
 ## Arquitetura visual
 
-![Visão geral do workflow](assets/screenshots/w01-workflow-overview.png)
+> Adicione aqui o print do workflow:
+
+```text
+assets/screenshots/w01-workflow-overview.png
+```
 
 ---
 
-## Stack utilizada
+## Stack
 
 - Zabbix
 - n8n
 - GLPI
-- Microsoft Teams
-- JavaScript em nós do n8n
+- Microsoft Teams / Power Automate
+- JavaScript em nós Code do n8n
 
 ---
 
 ## Fluxo macro
 
-Zabbix → Webhook n8n → Validação do Payload → Classificação do Alerta → Consulta Histórico Zabbix → Análise de Recorrência → Consulta GLPI → Decisão → GLPI / Teams / ACK Zabbix
+```mermaid
+flowchart LR
+    A[Zabbix Webhook] --> B[Normalizar Payload]
+    B --> C[Validar Payload]
+    C --> D[Classificar Alerta]
+    D --> E[Buscar Trigger no Zabbix]
+    E --> F[Analisar Histórico 1h]
+    F --> G[Anti-colisão]
+    G --> H[Buscar Chamados no GLPI]
+    H --> I{Decisão}
+    I -->|ABRIR| J[Criar Ticket]
+    I -->|ATUALIZAR| K[Adicionar Follow-up]
+    I -->|VALIDAR| L[Card Teams]
+    I -->|AGUARDAR| M[ACK Informativo]
+    J --> N[Teams + ACK]
+    K --> N
+    L --> O[Retorno Humano]
+    O --> N
+    M --> N
+```
 
 ---
 
-## Decisões automatizadas
+## Caminhos de decisão
 
-O workflow trabalha com quatro caminhos principais:
+### ABRIR
+Quando não existe chamado correlacionado para o host e trigger.
 
-### 1. Abrir chamado
+### ATUALIZAR
+Quando já existe chamado aberto para o mesmo host e trigger.
 
-Quando não existe ticket aberto relacionado ao alerta.
+### VALIDAÇÃO HUMANA
+Quando existe chamado aberto para o host, mas a trigger não bate exatamente.
 
-Resultado esperado:
-
-- Criação automática no GLPI
-- Notificação no Microsoft Teams
-- Acknowledge no Zabbix
-
-### 2. Atualizar chamado existente
-
-Quando já existe ticket aberto para o mesmo host e trigger.
-
-Resultado esperado:
-
-- Não abre chamado duplicado
-- Registra acompanhamento no ticket existente
-- Faz acknowledge no Zabbix
-
-### 3. Validação humana
-
-Quando existe chamado aberto para o host, mas a correlação não é exata.
-
-Resultado esperado:
-
-- Envia card interativo no Teams
-- Analista decide se abre novo ticket, atualiza existente ou ignora
-- Fluxo continua conforme decisão
-
-### 4. Aguardar
-
-Quando o evento ainda está em etapa inicial de escalonamento.
-
-Resultado esperado:
-
-- Evita abertura prematura de chamado
-- Registra acknowledge informativo no Zabbix
+### AGUARDAR
+Quando o alerta ainda está em step inicial e não deve gerar chamado prematuro.
 
 ---
 
-## Capacidades técnicas
+## Recursos técnicos demonstrados
 
-- Webhook autenticado
-- Validação de payload
-- Classificação de eventos
-- Consulta de histórico no Zabbix
-- Detecção de recorrência/flapping
-- Deduplicação antes da abertura de tickets
-- Correlação entre alerta e chamado
-- Notificação via Teams
-- Acknowledge automático no Zabbix
-- Tratamento de falhas em pontos críticos
-- Estratégia anti-colisão para alertas simultâneos
-
----
-
-## Tipos de eventos tratados
-
-Exemplos de classificações usadas na automação:
-
-- HOST_DOWN
-- VPN_DOWN
-- LINK_DOWN
-- CPU_ALERT
-- MEMORY_ALERT
-- SNMP_ALERT
-- GENERIC_ALERT
+- Webhook autenticado por header.
+- Validação de campos obrigatórios.
+- Classificação de eventos por tipo.
+- Hash/ID de automação para rastreabilidade.
+- Consulta de histórico no Zabbix.
+- Detecção de recorrência/flapping.
+- Deduplicação antes da abertura de ticket.
+- Validação humana via Teams.
+- Retry em chamadas críticas.
+- Acknowledge automático no Zabbix.
+- Timeout para decisão humana.
+- Estratégia anti-colisão para eventos simultâneos.
 
 ---
 
-## Benefícios esperados
+## Sobre os workflows publicados
 
-- Redução de abertura manual de chamados
-- Menos chamados duplicados
-- Mais rastreabilidade entre alerta e ticket
-- Menor tempo de resposta operacional
-- Padronização no tratamento de incidentes
-- Melhor visibilidade para o time NOC
-- Base pronta para evolução em SRE e observabilidade
+A pasta `workflows-public/` contém **amostras públicas sanitizadas**.
+
+Essas amostras:
+
+- Não são uma exportação completa de produção.
+- Não possuem URLs reais.
+- Não possuem IDs reais de credenciais.
+- Não possuem tokens.
+- Não possuem regras sensíveis completas.
+- Não foram pensadas para importação direta e uso em produção.
+
+O workflow real é mantido privado.
+
+---
+
+## Estrutura do repositório
+
+```text
+noc-automation/
+├── README.md
+├── .gitignore
+├── workflows-public/
+│   ├── W01_Principal_PUBLIC_SAMPLE.json
+│   └── W01_Validador_Alerta_PUBLIC_SAMPLE.json
+├── docs/
+│   └── linkedin-post.txt
+└── assets/
+    └── screenshots/
+        └── w01-workflow-overview.png
+```
 
 ---
 
 ## Segurança
 
-Este repositório não contém:
+Este repositório não deve conter:
 
-- URLs internas
-- Tokens
-- Credenciais
-- IDs reais de workflows
-- Payloads reais de produção
-- Export completo do workflow n8n
-- Regras sensíveis em nível operacional
-
----
-
-## Demonstração
-
-A solução pode ser demonstrada por meio de:
-
-1. Print da arquitetura do workflow
-2. Simulação de alerta do Zabbix
-3. Criação automática de ticket
-4. Notificação no Teams
-5. Acknowledge no Zabbix
-6. Cenário de deduplicação
-7. Cenário de validação humana
-
----
-
-## Status
-
-Projeto em evolução contínua.
-
-Atualmente o workflow está sendo refinado com foco em:
-
-- Modularização
-- Observabilidade do próprio workflow
-- Tratamento centralizado de erros
-- Melhorias de segurança
-- Separação de responsabilidades por domínio
+- exports reais do n8n;
+- tokens;
+- URLs internas;
+- URLs de Power Automate com `sig=`;
+- credential IDs reais;
+- instance IDs reais;
+- IDs reais de usuários, grupos, categorias ou localidades;
+- payloads reais de produção.
 
 ---
 
@@ -171,4 +154,4 @@ Atualmente o workflow está sendo refinado com foco em:
 
 Desenvolvido por **Welbert Simões dos Santos**.
 
-Projeto voltado para automação de NOC, monitoramento, observabilidade e gestão de tickets.
+Projeto voltado para automação NOC, observabilidade, monitoramento e gestão de tickets.

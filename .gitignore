@@ -1,8 +1,21 @@
-﻿.env
+# Nunca versionar exports reais do n8n
+workflows/
+*.real.json
+*_REAL.json
+*_FULL.json
+
+# Segredos e credenciais
+.env
 *.env
-*.json
 *credentials*
 *secrets*
+*tokens*
+
+# Permitir somente amostras públicas sanitizadas
+!workflows-public/
+!workflows-public/*_PUBLIC_SAMPLE.json
+
+# Sistema
 node_modules/
 .DS_Store
 Thumbs.db
