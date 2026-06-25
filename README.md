@@ -69,14 +69,14 @@ flowchart LR
 
 ## Caminhos de decisão
 
-### ABRIR
+### ABRIR e ABRIR RECORRÊNCIA
 Quando não existe chamado correlacionado para o host e trigger.
 
 ### ATUALIZAR
 Quando já existe chamado aberto para o mesmo host e trigger.
 
 ### VALIDAÇÃO HUMANA
-Quando existe chamado aberto para o host, mas a trigger não bate exatamente.
+Quando existe chamado aberto para o host, mas a trigger não bate exatamente, trazendo também como solução para massivas.
 
 ### AGUARDAR
 Quando o alerta ainda está em step inicial e não deve gerar chamado prematuro.
@@ -137,7 +137,7 @@ noc-automation/
 
 ## Segurança
 
-Este repositório não deve conter:
+Este repositório não contém:
 
 - exports reais do n8n;
 - tokens;
